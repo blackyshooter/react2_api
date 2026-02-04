@@ -1,16 +1,17 @@
-export default function CharacterCard({ character, onBuy }) {
-  const { id, name, image, status, species, gender } = character;
-
-  // Precio mock (para que parezca ecommerce)
-  const price = (id * 1.37 + 9.9).toFixed(2);
+export default function CharacterCard({ character, price, onBuy }) {
+  const { name, image, status, species, gender } = character;
 
   const badgeClass =
-    status === "Alive" ? "badgeAlive" : status === "Dead" ? "badgeDead" : "badgeUnknown";
+    status === "Alive"
+      ? "badgeAlive"
+      : status === "Dead"
+      ? "badgeDead"
+      : "badgeUnknown";
 
   return (
     <article className="card">
       <div className="cardMedia">
-        <img className="cardImg" src={image} alt={name} />
+        <img className="cardImg" src={image} alt={name} loading="lazy" />
         <span className={`badge ${badgeClass}`}>{status}</span>
       </div>
 
@@ -27,10 +28,10 @@ export default function CharacterCard({ character, onBuy }) {
         <div className="priceRow">
           <div className="price">
             <span className="priceSymbol">$</span>
-            <span className="priceValue">{price}</span>
+            <span className="priceValue">{price.toFixed(2)}</span>
           </div>
 
-          <button className="buyBtn" onClick={() => onBuy(character)}>
+          <button className="buyBtn" onClick={onBuy}>
             Comprar
           </button>
         </div>

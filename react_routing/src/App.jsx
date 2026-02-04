@@ -1,20 +1,26 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import "./App.css";
+
 import CharacterCard from "../components/CharacterCard";
 import Pagination from "../components/Pagination";
+
+function getPrice(character) {
+  // Precio "fake" determinístico (para practicar carrito sin backend)
+  return Number((character.id * 1.37 + 9.9).toFixed(2));
+}
 
 export default function App() {
   const baseUrl = "https://rickandmortyapi.com/api/character?page=";
 
   const [characters, setCharacters] = useState([]);
   const [page, setPage] = useState(1);
-
   const [totalPages, setTotalPages] = useState(1);
+
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
-  // “Carrito” simple para simular ecommerce
   const [cartCount, setCartCount] = useState(0);
+  const [cartTotal, setCartTotal] = useState(0);
 
   async function requestData(currentPage) {
     setLoading(true);
@@ -27,9 +33,9 @@ export default function App() {
       const data = await res.json();
       setCharacters(data.results || []);
       setTotalPages(data?.info?.pages ?? 1);
-    } catch (err) {
+    } catch (e) {
       setCharacters([]);
-      setErrorMsg("No se pudo cargar la data. Revisá tu internet o la API.");
+      setErrorMsg("No se pudo cargar la data. Revisá tu conexión o la API.");
     } finally {
       setLoading(false);
     }
@@ -39,35 +45,27 @@ export default function App() {
     requestData(page);
   }, [page]);
 
+  function addToCart(price) {
+    setCartCount((prev) => prev + 1);
+    setCartTotal((prev) => Number((prev + price).toFixed(2)));
+  }
+
   const canPrev = page > 1 && !loading;
   const canNext = page < totalPages && !loading;
-
-  const headerInfo = useMemo(() => {
-    return {
-      title: "Mini Ecommerce (API)",
-      subtitle: "Tarjetas + paginación con estados (React + Vite)",
-    };
-  }, []);
-
-  function handleBuy(character) {
-    setCartCount((c) => c + 1);
-    // si querés, después lo convertimos en un carrito real
-    // por ahora simulamos compra rápida:
-    // alert(`Compraste: ${character.name}`);
-  }
 
   return (
     <div className="page">
       <header className="topbar">
         <div className="brand">
-          <h1 className="title">{headerInfo.title}</h1>
-          <p className="subtitle">{headerInfo.subtitle}</p>
+          <h1 className="title">Tienda de NFTS</h1>
+          <p className="subtitle">Rick & Morty API</p>
         </div>
 
-        <div className="cart">
-          <span className="cartLabel">Carrito</span>
-          <span className="cartBadge">{cartCount}</span>
-        </div>
+        
+        <h1 className="cartSummary">
+          🛒 Artículos: <span className="cartSummaryNum">{cartCount}</span> | Total:{" "}
+          <span className="cartSummaryNum">${cartTotal.toFixed(2)}</span>
+        </h1>
       </header>
 
       <section className="controls">
@@ -96,13 +94,17 @@ export default function App() {
 
       {!loading && !errorMsg && (
         <section className="grid">
-          {characters.map((character) => (
-            <CharacterCard
-              key={character.id}
-              character={character}
-              onBuy={handleBuy}
-            />
-          ))}
+          {characters.map((character) => {
+            const price = getPrice(character);
+            return (
+              <CharacterCard
+                key={character.id}
+                character={character}
+                price={price}
+                onBuy={() => addToCart(price)}
+              />
+            );
+          })}
         </section>
       )}
 
@@ -112,5 +114,3 @@ export default function App() {
     </div>
   );
 }
-
- // export default App
